@@ -408,3 +408,14 @@ def test_unbound_protected_tool_is_denied_and_unprotected_one_is_left_out():
     assert POLICY.resolve("docs.search", {}, protected) is None
     op = POLICY.resolve("erp.approve_invoice", {"inv": "I1"}, protected)
     assert op[0] == "approve_inv"
+
+
+def test_tool_added_after_deployment_is_denied_until_classified():
+    from sodrm.policy import classify
+    protected = frozenset({"erp.approve_invoice", "erp.release_payment"})
+    unprotected = frozenset({"docs.search"})
+    manifest = ["erp.approve_invoice", "erp.release_payment", "docs.search", "erp.bulk_payout"]
+    assert classify(manifest, protected, unprotected) == ["erp.bulk_payout"]
+    assert POLICY.resolve("erp.bulk_payout", {}, protected, unprotected) == "deny"
+    assert POLICY.resolve("docs.search", {}, protected, unprotected) is None
+    assert POLICY.resolve("erp.bulk_payout", {}, protected, unprotected | {"erp.bulk_payout"}) is None

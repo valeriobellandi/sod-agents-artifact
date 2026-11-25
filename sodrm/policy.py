@@ -83,14 +83,28 @@ class Policy:
         return None
 
 
-    def resolve(self, tool: str, args: Dict[str, object], protected: FrozenSet[str]):
-        """Fail-closed resolution: a call to a protected tool that matches no binding is denied
-        (returns "deny"); an unprotected, unbound tool returns None and is left to per-call
-        access control."""
+    def resolve(self, tool: str, args: Dict[str, object], protected: FrozenSet[str],
+                unprotected: Optional[FrozenSet[str]] = None):
+        """Fail-closed resolution against the tool inventory.
+
+        A call to a protected tool that matches no binding is denied ("deny"). If the inventory
+        of unprotected tools is given, a tool that is in neither list (for instance one added
+        to the platform after deployment and not yet classified) is denied as well. An
+        unprotected, unbound tool returns None and is left to per-call access control."""
         ev = self.bind(tool, args)
-        if ev is None and tool in protected:
+        if ev is not None:
+            return ev
+        if tool in protected:
             return "deny"
-        return ev
+        if unprotected is not None and tool not in unprotected:
+            return "deny"
+        return None
+
+
+def classify(manifest: List[str], protected: FrozenSet[str], unprotected: FrozenSet[str]) -> List[str]:
+    """Tools listed by the platform (e.g. an MCP tools/list) that the inventory does not classify;
+    run at deployment and whenever the manifest changes."""
+    return sorted(set(manifest) - set(protected) - set(unprotected))
 
 
 def coverage(policy: "Policy", protected: FrozenSet[str]) -> Dict[str, list]:

@@ -11,9 +11,9 @@ and Secure Computing). It does not contain the paper.
 | `policies/energy_ops.sod` | The policy listing of the paper |
 | `gridops/` | **GridOps-SoD**, the simulated energy operator: power flow on the MV Oberrhein network of pandapower, four workflows with truthful check tools, 28 agents, attacks A1-A6, baselines B0-B4, the enforcement proxy, scripted agents and LLM agents for any OpenAI-compatible endpoint |
 | `bench/` | Stage 1 benchmark (`run.py`), scripted runs (`stage2.py`), LLM runs (`stage2_llm.py`), long-horizon pairing with LLM agents (`a5_llm.py`), cost estimate (`estimate_cost.py`) |
-| `analysis/` | Metrics and tests reported in the paper (`analyze_llm.py`, `analyze_a5.py`) |
+| `analysis/` | Metrics and tests reported in the paper (`analyze_llm.py`, `analyze_a5.py`) and the per-seed, per-workflow table of the supplementary material (`strata_llm.py`) |
 | `config/` | Model endpoints: local Ollama or hosted providers (keys are read only from environment variables) |
-| `tests/` | 50 tests: monitor against the definitions and the oracle, and the environment |
+| `tests/` | 51 tests: monitor against the definitions and the oracle, and the environment |
 | `results/` | All results reported in the paper (see below) |
 | `run_mac.sh` | Every run on a Mac with Ollama, or on hosted providers |
 
@@ -25,7 +25,7 @@ Python 3.10 or later. `pip install pandapower pytest matplotlib`. LLM runs need 
 providers in `config/`.
 
 ```bash
-python -m pytest -q tests      # 50 tests, about 10 s
+python -m pytest -q tests      # 51 tests, about 10 s
 ```
 
 ## Results and how to reproduce them
@@ -75,8 +75,9 @@ to the releases of this repository.
 
 ## Scope of the prototype
 
-The prototype implements the decision core, the parser, the ledger, the coverage checks and the
-denial of unbound protected tools. The static SoD and satisfiability checks, credential isolation
+The prototype implements the decision core, the parser, the ledger, the coverage checks, the
+classification of the platform's tool manifest and the denial of unbound protected and of
+unclassified tools. The static SoD and satisfiability checks, credential isolation
 and the isolation of agent runtimes are part of the design; in GridOps-SoD agents reach tools and
 each other only through the proxy, but the monitor has not been tested with a production agent
 runtime. Attacker-controlled agents (the A4 initiator and the A3a sub-agent) are scripted in every
